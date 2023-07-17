@@ -1,0 +1,29 @@
+﻿@page "/counter"
+
+@using ClosedXML.Excel;
+
+<InputFile OnChange="@ImportExcelFile" />
+<h3>@Dato</h3>
+<h3>@Dato2</h3>
+@code {
+    string Dato = " ";
+    string Dato2 = " ";
+    async Task ImportExcelFile(InputFileChangeEventArgs e)
+    {
+        var fileStream = e.File.OpenReadStream();
+        var ms = new MemoryStream();
+        await fileStream.CopyToAsync(ms);
+        fileStream.Close();
+        ms.Position = 0;
+
+        using var wbook = new XLWorkbook(ms);
+
+        var ws1 = wbook.Worksheet(1);
+        var data = ws1.Cell("C9").GetValue<string>();
+        var data2 = ws1.Cell("E11").GetValue<string>();
+        Dato = data;
+        Dato2 = data2;
+        Console.WriteLine(data);
+    }    
+
+}

@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\buildMultiTargeting\LeerExcelConBlazor.Server.props" />
+</Project>

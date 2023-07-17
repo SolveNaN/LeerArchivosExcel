@@ -1,0 +1,108 @@
+﻿@page "/"
+@using System.Data
+@using System.IO
+@using NPOI.XSSF.UserModel
+@using NPOI.SS.UserModel
+
+<InputFile OnChange="@ImportExcelFile" />
+
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            @foreach (DataColumn col in dt.Columns)
+            {
+                <th>@col.ColumnName</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (DataRow row in dt.Rows)
+        {
+
+            <tr>
+                @foreach (DataColumn col in dt.Columns)
+                {
+
+                    <td>@row[col.ColumnName]</td>
+
+                }
+            </tr>
+
+        }
+    </tbody>
+</table>
+<h3>Profesores</h3>
+@foreach(var nombre in Nombres)
+{
+    <b>@nombre</b><br />
+}
+
+@code {
+
+    //Funcion para administrar excel
+    DataTable dt = new DataTable();
+    public static List<string> Nombres = new List<string>();
+    async Task ImportExcelFile(InputFileChangeEventArgs e)
+    {
+        var fileStream = e.File.OpenReadStream();
+        var ms = new MemoryStream();
+        await fileStream.CopyToAsync(ms);
+        fileStream.Close();
+        ms.Position = 0;
+
+        ISheet sheet;
+        var xsswb = new XSSFWorkbook(ms);
+
+        sheet = xsswb.GetSheetAt(0);
+        IRow hr = sheet.GetRow(0);
+        var rl = new List<string>();
+
+        int cc = hr.LastCellNum;
+        for (var j = 0; j < cc; j++)
+        {
+            ICell cell = hr.GetCell(j);
+            dt.Columns.Add(cell.ToString());
+        }
+
+        for (var j = (sheet.FirstRowNum + 1); j <= sheet.LastRowNum; j++)
+        {
+            var r = sheet.GetRow(j);
+            for (var i = r.FirstCellNum; i < cc; i++)
+            {
+                rl.Add(r.GetCell(i).ToString());
+            }
+            if (rl.Count > 0)
+            {
+                dt.Rows.Add(rl.ToArray());
+            }
+            rl.Clear();
+        }
+
+        foreach (DataRow row in dt.Rows)
+        {
+
+            foreach (DataColumn col in dt.Columns)
+            {
+
+                var celda = row[col.ColumnName];
+                var columna = col.ColumnName;
+                columna = columna.ToString();
+
+
+                if (columna == "Curso")
+                {
+                    Nombres.Add(celda.ToString());
+
+                }
+
+            }
+
+        }
+
+
+    }
+
+    //Fin de funcion para administrar excel
+
+}
